@@ -34,6 +34,11 @@ String sha256ofString(String input) {
 abstract class AppleProvider extends OAuthProvider {}
 
 class AppleProviderImpl extends AppleProvider {
+
+  final WebAuthenticationOptions? webAuthenticationOptions;
+
+  AppleProviderImpl({this.webAuthenticationOptions});
+
   @override
   Future<fba.OAuthCredential> signIn() async {
     final rawNonce = generateNonce();
@@ -41,6 +46,7 @@ class AppleProviderImpl extends AppleProvider {
 
     // Request credential for the currently signed in Apple account.
     final appleCredential = await SignInWithApple.getAppleIDCredential(
+      webAuthenticationOptions: webAuthenticationOptions,
       scopes: [
         AppleIDAuthorizationScopes.email,
         AppleIDAuthorizationScopes.fullName,
@@ -81,11 +87,13 @@ class AppleProviderImpl extends AppleProvider {
 
 class AppleProviderConfiguration
     extends OAuthProviderConfiguration<AppleProvider> {
-  const AppleProviderConfiguration();
+  const AppleProviderConfiguration({this.webAuthenticationOptions});
+
+  final WebAuthenticationOptions? webAuthenticationOptions;
 
   @override
   AppleProvider createProvider() {
-    return AppleProviderImpl();
+    return AppleProviderImpl(webAuthenticationOptions: webAuthenticationOptions);
   }
 
   @override
@@ -102,6 +110,8 @@ class AppleProviderConfiguration
   @override
   bool isSupportedPlatform(TargetPlatform platform) {
     return !kIsWeb &&
-        (platform == TargetPlatform.iOS || platform == TargetPlatform.macOS);
+        (platform == TargetPlatform.iOS ||
+            platform == TargetPlatform.macOS ||
+            platform == TargetPlatform.android);
   }
 }
