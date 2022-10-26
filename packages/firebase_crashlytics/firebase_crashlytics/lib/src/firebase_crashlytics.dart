@@ -9,11 +9,10 @@ part of firebase_crashlytics;
 ///
 /// You can get an instance by calling [FirebaseCrashlytics.instance].
 class FirebaseCrashlytics extends FirebasePluginPlatform {
+  static Map<String, FirebaseCrashlytics> _firebaseCrashlyticsInstances = {};
+
   FirebaseCrashlytics._({required this.app})
       : super(app.name, 'plugins.flutter.io/firebase_crashlytics');
-
-  /// Cached instance of [FirebaseCrashlytics];
-  static FirebaseCrashlytics? _instance;
 
   // Cached and lazily loaded instance of [FirebaseCrashlyticsPlatform] to avoid
   // creating a [MethodChannelFirebaseCrashlytics] when not needed or creating an
@@ -30,8 +29,17 @@ class FirebaseCrashlytics extends FirebasePluginPlatform {
 
   /// Returns an instance using the default [FirebaseApp].
   static FirebaseCrashlytics get instance {
-    _instance ??= FirebaseCrashlytics._(app: Firebase.app());
-    return _instance!;
+    var defaultAppInstance = Firebase.app();
+    return FirebaseCrashlytics.instanceFor(app: defaultAppInstance);
+  }
+
+  /// Returns an instance using a specified [FirebaseApp].
+  factory FirebaseCrashlytics.instanceFor({
+    required FirebaseApp app,
+  }) {
+    return _firebaseCrashlyticsInstances.putIfAbsent(app.name, () {
+      return FirebaseCrashlytics._(app: app);
+    });
   }
 
   /// Whether the current Crashlytics instance is collecting reports. If false,
